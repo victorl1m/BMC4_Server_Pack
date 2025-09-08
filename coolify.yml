@@ -1,0 +1,31 @@
+# Coolify Docker Deployment Configuration
+
+# Build and deployment settings
+version: '3.8'
+
+services:
+  minecraft:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "25565:25565"
+    environment:
+      - EULA=true
+      - JAVA_OPTS=-Xmx4G -Xms4G -Dlog4j2.formatMsgNoLookups=true
+    volumes:
+      - world_data:/minecraft/world
+      - server_logs:/minecraft/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "echo", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+volumes:
+  world_data:
+    driver: local
+  server_logs:
+    driver: local

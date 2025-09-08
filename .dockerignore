@@ -1,0 +1,54 @@
+# Docker ignore file
+# Exclude unnecessary files from Docker build context
+
+# Original scripts that are no longer needed (if they exist)
+*.bat
+*.ps1
+install_java.*
+
+# Keep our Docker startup script
+!start-server.sh
+
+# Git files
+.git
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime files (will be created in container)
+logs/
+world/
+crash-reports/
+eula.txt
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# Development files
+READ_ME.txt
+.env
+.env.local
+
+# Node modules if any
+node_modules/
+
+# Cache directories
+.cache/
+cache/
+
+# Large unnecessary files
+*.zip
+*.tar.gz
