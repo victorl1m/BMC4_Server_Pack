@@ -1,7 +1,7 @@
 # Coolify Docker Deployment Configuration
 
 # Build and deployment settings
-version: '3.8'
+version: "3.8"
 
 services:
   minecraft:

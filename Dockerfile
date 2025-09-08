@@ -16,11 +16,11 @@ COPY . .
 
 # Download and install Forge server if not present
 RUN if [ ! -f forge-*.jar ] || [ ! -f forge-*-shim.jar ]; then \
-        echo "Downloading Forge installer..."; \
-        wget -O forge-installer.jar "https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.6/forge-1.20.1-47.4.6-installer.jar"; \
-        echo "Installing Forge server..."; \
-        java -jar forge-installer.jar --installServer; \
-        rm -f forge-installer.jar; \
+    echo "Downloading Forge installer..."; \
+    wget -O forge-installer.jar "https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.6/forge-1.20.1-47.4.6-installer.jar"; \
+    echo "Installing Forge server..."; \
+    java -jar forge-installer.jar --installServer; \
+    rm -f forge-installer.jar; \
     fi
 
 # Production stage
