@@ -41,6 +41,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     procps \
+    net-tools \
+    netcat-openbsd \
+    iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create minecraft user for security
@@ -53,7 +56,7 @@ WORKDIR /minecraft
 COPY --from=builder /minecraft /minecraft
 
 # Make startup scripts executable
-RUN chmod +x /minecraft/start-server.sh /minecraft/debug-server.sh /minecraft/start.sh
+RUN chmod +x /minecraft/start-server.sh /minecraft/debug-server.sh /minecraft/start.sh /minecraft/network-test.sh
 
 # Create necessary directories
 RUN mkdir -p /minecraft/world /minecraft/logs /minecraft/crash-reports && \
