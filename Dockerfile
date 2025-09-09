@@ -14,14 +14,21 @@ WORKDIR /minecraft
 # Copy server files
 COPY . .
 
-# Download and install Forge server if not present
-RUN if [ ! -f forge-*.jar ] || [ ! -f forge-*-shim.jar ]; then \
-    echo "Downloading Forge installer..."; \
-    wget -O forge-installer.jar "https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.6/forge-1.20.1-47.4.6-installer.jar"; \
-    echo "Installing Forge server..."; \
-    java -jar forge-installer.jar --installServer; \
-    rm -f forge-installer.jar; \
-    fi
+# Download ServerStarterJar for NeoForge/Forge compatibility
+RUN echo "Downloading ServerStarterJar..." && \
+    wget -O server.jar "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar" && \
+    echo "ServerStarterJar downloaded successfully"
+
+# Generate user_jvm_args.txt
+RUN echo "# Xmx and Xms set the maximum and minimum RAM usage, respectively." > user_jvm_args.txt && \
+    echo "# They can take any number, followed by an M or a G." >> user_jvm_args.txt && \
+    echo "# M means Megabyte, G means Gigabyte." >> user_jvm_args.txt && \
+    echo "# For example, to set the maximum to 3GB: -Xmx3G" >> user_jvm_args.txt && \
+    echo "# To set the minimum to 2.5GB: -Xms2500M" >> user_jvm_args.txt && \
+    echo "# A good default for a modded server is 4GB." >> user_jvm_args.txt && \
+    echo "# Uncomment the next line to set it." >> user_jvm_args.txt && \
+    echo "# -Xmx4G" >> user_jvm_args.txt && \
+    echo "-Xmx4G -Xms4G -Dlog4j2.formatMsgNoLookups=true -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:MaxGCPauseMillis=100 -XX:+DisableExplicitGC -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:G1MixedGCLiveThresholdPercent=35" >> user_jvm_args.txt
 
 # Production stage
 FROM openjdk:21-jdk-slim
@@ -45,8 +52,8 @@ WORKDIR /minecraft
 # Copy built server from builder stage
 COPY --from=builder /minecraft /minecraft
 
-# Make startup script executable
-RUN chmod +x /minecraft/start-server.sh
+# Make startup scripts executable
+RUN chmod +x /minecraft/start-server.sh /minecraft/debug-server.sh /minecraft/start.sh
 
 # Create necessary directories
 RUN mkdir -p /minecraft/world /minecraft/logs /minecraft/crash-reports && \
@@ -58,9 +65,9 @@ USER minecraft
 # Expose Minecraft server port
 EXPOSE 25565
 
-# Health check - simplified for container environment
+# Health check - check for server.jar process
 HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
-    CMD pgrep -f "forge.*jar" > /dev/null || exit 1
+    CMD pgrep -f "server\.jar" > /dev/null || exit 1
 
 # Environment variables
 ENV JAVA_OPTS="-Xmx4G -Xms4G -Dlog4j2.formatMsgNoLookups=true -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:MaxGCPauseMillis=100 -XX:+DisableExplicitGC -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:G1MixedGCLiveThresholdPercent=35"

@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Minecraft Forge Server Startup Script for Docker
-# This script is optimized for container environments
+# This script is optimized for container environments using ServerStarterJar
 
 set -e
 
 echo "Starting Minecraft Forge Server..."
 echo "Minecraft Version: 1.20.1"
 echo "Forge Version: 47.4.6"
+echo "Java Options: $JAVA_OPTS"
 
 # Accept EULA if not already done
 if [ ! -f eula.txt ] || [ "$(cat eula.txt | grep -c 'eula=true')" -eq 0 ]; then
@@ -15,30 +16,20 @@ if [ ! -f eula.txt ] || [ "$(cat eula.txt | grep -c 'eula=true')" -eq 0 ]; then
     echo "eula=true" > eula.txt
 fi
 
-# Set default Java options if not provided
-if [ -z "$JAVA_OPTS" ]; then
-    export JAVA_OPTS="-Xmx4G -Xms4G -Dlog4j2.formatMsgNoLookups=true"
-fi
-
-echo "Java Options: $JAVA_OPTS"
-
-# Find the Forge server jar
-FORGE_JAR=""
-if [ -f forge-*-shim.jar ]; then
-    FORGE_JAR=$(ls forge-*-shim.jar | head -n 1)
-elif [ -f forge-*.jar ]; then
-    FORGE_JAR=$(ls forge-*.jar | grep -v installer | head -n 1)
-fi
-
-if [ -z "$FORGE_JAR" ]; then
-    echo "ERROR: No Forge server jar found!"
-    echo "Available jars:"
+# Check for ServerStarterJar
+if [ ! -f server.jar ]; then
+    echo "ERROR: No server.jar found!"
+    echo "Available files:"
     ls -la *.jar 2>/dev/null || echo "No jar files found"
     exit 1
 fi
 
-echo "Using Forge jar: $FORGE_JAR"
+echo "Using ServerStarterJar: server.jar"
 
-# Start the server
-echo "Starting server with command: java $JAVA_OPTS -jar $FORGE_JAR --nogui"
-exec java $JAVA_OPTS -jar "$FORGE_JAR" --nogui
+# Define the Forge installer URL for ServerStarterJar
+FORGE_INSTALLER_URL="https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.6/forge-1.20.1-47.4.6-installer.jar"
+
+# Start the server using ServerStarterJar with Forge installer
+echo "Starting server with ServerStarterJar..."
+echo "Command: java @user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer $FORGE_INSTALLER_URL nogui"
+exec java @user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer "$FORGE_INSTALLER_URL" nogui
